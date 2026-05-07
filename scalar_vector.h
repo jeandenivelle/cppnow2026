@@ -21,8 +21,8 @@ namespace shared
       struct onheap
       {
          size_t nrrefs;
-         size_t ss;
-         size_t cc;
+         size_t sz;
+         size_t cap;
          S scal; 
          V vect[s];
  
@@ -35,15 +35,15 @@ namespace shared
       struct onheap0
       {
          size_t nrrefs;
-         size_t ss;
-         size_t cc;
+         size_t sz;
+         size_t cap;
          S scal;
 
          template< std::convertible_to<S> S1 > 
-         onheap0( S1&& scal, size_t cc )
+         onheap0( S1&& scal, size_t cap )
             : nrrefs(1),
-              ss(0),
-              cc(cc),
+              sz(0),
+              cap(cap),
               scal( std::forward<S1> ( scal ))
          { }
 
@@ -60,7 +60,7 @@ namespace shared
          { return (( onheap<1> * ) ptr ) -> vect; }
 
       static constexpr V* vectend( onheap0* ptr ) 
-         { return vectbegin( ptr ) + ( ptr -> ss ); } 
+         { return vectbegin( ptr ) + ( ptr -> sz ); } 
 
       inline static void destroy( onheap0* ptr )
       {
@@ -119,7 +119,7 @@ public:
       {
          V* into = vectbegin( ptr );
          copy_construct( begin, end, into ); 
-         ( ptr -> ss ) = end - begin; 
+         ( ptr -> sz ) = end - begin; 
       }
 
       template< std::convertible_to<S> S1 >
@@ -163,7 +163,7 @@ public:
       const V& get( size_t i ) const { return vectbegin( ptr )[i]; }
          // Merrily unchecked.
 
-      size_t size( ) const { return ptr -> ss; }
+      size_t size( ) const { return ptr -> sz; }
 
       using const_iterator = const V*;
 
@@ -176,10 +176,10 @@ public:
          {
             -- ( ptr -> nrrefs );
             auto oldptr = ptr;
-            ptr = alloc( std::forward<S1> ( scal ), ptr -> cc );
+            ptr = alloc( std::forward<S1> ( scal ), ptr -> cap );
             copy_construct( vectbegin( oldptr ), vectend( oldptr ), 
                             vectbegin( ptr ));
-            ptr -> ss = oldptr -> ss;
+            ptr -> sz = oldptr -> sz;
             return ( ptr -> scal );
          }
          else
@@ -212,23 +212,23 @@ public:
 
       // Call this only if you are certain that you will change the vector:
 
-      void reserve( size_t new_cc )
+      void reserve( size_t new_cap )
       {
          if( isshared( ))
          {
             -- ( ptr -> nrrefs );
             auto oldptr = ptr;
-            ptr = alloc( get( ), new_cc );
+            ptr = alloc( get( ), new_cap );
             copy_construct( vectbegin( oldptr ), vectend( oldptr ),
                             vectbegin( ptr ));
-            ptr -> ss = oldptr -> ss;
+            ptr -> sz = oldptr -> sz;
          }
          else
          {
-            if( new_cc > ( ptr -> cc ))
+            if( new_cap > ( ptr -> cap ))
             {
-               auto newptr = alloc( std::move( get( )), new_cc );
-               // std::cout << newptr -> ss << "/" << newptr -> cc << "\n";
+               auto newptr = alloc( std::move( get( )), new_cap );
+               // std::cout << newptr -> sz << "/" << newptr -> cap << "\n";
                if constexpr( std::is_nothrow_move_constructible_v<V> )
                {
                    move_construct( vectbegin( ptr ), vectend( ptr ),
@@ -248,7 +248,7 @@ public:
                   }
                }
 
-               ( newptr -> ss ) = ( ptr -> ss ); 
+               ( newptr -> sz ) = ( ptr -> sz ); 
                destroy( ptr );
                ptr = newptr; 
             } 
@@ -259,17 +259,17 @@ public:
       template< std::convertible_to<V> V1 >
       void push_back( V1&& v )
       {
-         if( ptr -> ss < ptr -> cc )
-            reserve( ptr -> ss );
+         if( ptr -> sz < ptr -> cap )
+            reserve( ptr -> sz );
          else
          {
-            size_t cc = ( ptr -> cc );
-            size_t new_cc = cc + 1;
-            if( new_cc < cc + cc )
-               new_cc = cc + cc;
-            reserve( new_cc );
+            size_t cap = ( ptr -> cap );
+            size_t new_cap = cap + 1;
+            if( new_cap < cap + cap )
+               new_cap = cap + cap;
+            reserve( new_cap );
          } 
-         new ( vectbegin( ptr ) + ( ptr -> ss ++ )) 
+         new ( vectbegin( ptr ) + ( ptr -> sz ++ )) 
                                     V( std::forward<V1> (v) ); 
       }
 
@@ -277,8 +277,8 @@ public:
       {
          if( isshared( ))
             set( get( ));
-         size_t ss = -- ( ptr -> ss );
-         ( vectbegin( ptr ) + ss ) -> ~V( ); 
+         size_t sz = -- ( ptr -> sz );
+         ( vectbegin( ptr ) + sz ) -> ~V( ); 
       }
 
       void clear()
@@ -286,7 +286,7 @@ public:
          if( isshared( ))
             set( get( ));
          shared::destroy( vectbegin( ptr ), vectend( ptr ));      
-         ( ptr -> ss ) = 0;
+         ( ptr -> sz ) = 0;
       }
 
       // Print with internals:
@@ -297,7 +297,7 @@ public:
          out << "(state: ";
          util::hexprint( out, s );
          out << ", #" << ( ptr -> nrrefs ) << ", ";
-         out << ( ptr -> ss ) << "/" << ( ptr -> cc ) << ")";
+         out << ( ptr -> sz ) << "/" << ( ptr -> cap ) << ")";
       }
 
       bool isshared() const { return ( ptr -> nrrefs ) != 1; }

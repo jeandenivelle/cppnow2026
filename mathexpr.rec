@@ -1,0 +1,94 @@
+
+%dir .
+   // Directory where class definitions will be written.
+
+%namespace
+
+%define mathexpr ( sel_pi )
+%option ratconst { sel_rat } => # val : rational 
+%option mathconst { sel_pi, sel_e } =>
+%option variable { sel_var } => # name : std::string 
+%option arith1 { sel_neg, sel_recipr } => sub : mathexpr
+%option arith2 { sel_sub, sel_truediv } => sub1 : mathexpr, sub2 : mathexpr
+%option arithN { sel_add, sel_mul } => [ sub : mathexpr ] 
+%option specfunc1 { sel_sin, sel_cos, 
+                    sel_exp, sel_ln, sel_sqrt } => sub : mathexpr 
+%option specfunc2 { sel_pow } => sub1 : mathexpr, sub2 : mathexpr 
+
+%h_incl {
+        #include "tvm/includes.h"
+        #include "rational.h"
+}
+
+%h_methods
+{
+   void print( std::ostream& out ) const;
+}
+
+%h_after
+{
+   std::ostream& operator << ( std::ostream& out, const mathexpr& expr );
+
+   inline mathexpr mathexpr_rat( const rational& val )
+      { return mathexpr( sel_rat, val ); }
+
+   inline mathexpr mathexpr_pi( ) 
+      { return mathexpr( sel_pi ); }
+
+   inline mathexpr mathexpr_e( ) 
+      { return mathexpr( sel_e ); }
+
+   inline mathexpr mathexpr_var( const std::string& name )
+      { return mathexpr( sel_var, name ); }
+
+   inline mathexpr mathexpr_neg( const mathexpr& sub )
+      { return mathexpr( sel_neg, sub ); }
+
+   inline mathexpr mathexpr_recipr( const mathexpr& sub )
+      { return mathexpr( sel_recipr, sub ); }
+
+
+   inline mathexpr mathexpr_sub( const mathexpr& sub1, const mathexpr& sub2 )
+      { return mathexpr( sel_sub, sub1, sub2 ); }
+
+   inline 
+   mathexpr mathexpr_truediv( const mathexpr& sub1, const mathexpr& sub2 )
+      { return mathexpr( sel_truediv, sub1, sub2 ); } 
+   
+   template< std::random_access_iterator It >
+   requires std::convertible_to< std::iter_value_t<It>, mathexpr >
+   inline mathexpr mathexpr_add( It begin, It end )
+      { return mathexpr( sel_add, begin, end ); }
+
+   inline mathexpr mathexpr_add( std::initializer_list< mathexpr > args )
+      { return mathexpr_add( args. begin( ), args. end( )); }
+
+   template< std::random_access_iterator It >
+   requires std::convertible_to< std::iter_value_t<It>, mathexpr >
+   inline mathexpr mathexpr_mul( It begin, It end )
+      { return mathexpr( sel_mul, begin, end ); } 
+
+   inline mathexpr mathexpr_mul( std::initializer_list< mathexpr > sub )
+      { return mathexpr_mul( sub. begin( ), sub. end( )); }
+ 
+   inline mathexpr mathexpr_sin( const mathexpr& sub )
+      { return mathexpr( sel_sin, sub ); }
+
+   inline mathexpr mathexpr_cos( const mathexpr& sub )
+      { return mathexpr( sel_cos, sub ); }
+
+   inline mathexpr mathexpr_exp( const mathexpr& sub )
+      { return mathexpr( sel_exp, sub ); }
+
+   inline mathexpr mathexpr_ln( const mathexpr& sub )
+      { return mathexpr( sel_ln, sub ); }
+
+   inline mathexpr mathexpr_sqrt( const mathexpr& sub )
+      { return mathexpr( sel_sqrt, sub ); }
+
+   inline mathexpr mathexpr_pow( const mathexpr& sub1, const mathexpr& sub2 )
+      { return mathexpr( sel_pow, sub1, sub2 ); } 
+
+}
+
+
