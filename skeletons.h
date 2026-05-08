@@ -86,7 +86,7 @@ namespace early_pntr
 
    struct arith1 { mathexpr sub; };
    struct arith2 { mathexpr sub1; mathexpr sub2; };
-   struct arithN { size_t cap; size_t sz; mathexpr sub[1000]; };
+   struct arithN { size_t cap; size_t sz; mathexpr sub[99]; };
       // Problematic, needs C99 flexible arrays.
    struct specfunc1 { mathexpr sub; };
    struct specfunc2 { mathexpr sub1; mathexpr sub2; };
