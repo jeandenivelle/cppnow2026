@@ -1,6 +1,13 @@
 
 // Written by Hans de Nivelle with help of Olzhas Zhangeldinov.
 // 2022 (revised 2026). 
+// Note that this implementation of scalar_vector is not usable. 
+// The problem is that I wanted to move reference counting
+// to the scalar_vector (here), but that that is not possible
+// in all cases. There are also some stylistic problems
+// that are not worth fixing, since the data structure as a whole
+// is unusable. It's a pity, because it would have been elegant.
+
 
 #ifndef SHARED_SCALAR_VECTOR_
 #define SHARED_SCALAR_VECTOR_
@@ -59,7 +66,7 @@ namespace shared
       static constexpr V* vectbegin( onheap0* ptr ) 
          { return (( onheap<1> * ) ptr ) -> vect; }
 
-      static constexpr V* vectend( onheap0* ptr ) 
+     static constexpr V* vectend( onheap0* ptr ) 
          { return vectbegin( ptr ) + ( ptr -> sz ); } 
 
       inline static void destroy( onheap0* ptr )
@@ -260,7 +267,7 @@ public:
       void push_back( V1&& v )
       {
          if( ptr -> sz < ptr -> cap )
-            reserve( ptr -> sz );
+            reserve( 1 + ptr -> sz );
          else
          {
             size_t cap = ( ptr -> cap );
