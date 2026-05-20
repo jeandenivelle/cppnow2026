@@ -1,6 +1,6 @@
 
-#ifndef EFFICIENT_COMPOSITION_
-#define EFFICIENT_COMPOSITION_
+#ifndef EFFICIENT_CONCAT_
+#define EFFICIENT_CONCAT_
 
 // Composition of two rewrite_rules.
 // First try the first, if that does not result
@@ -9,14 +9,14 @@
 namespace efficient
 {
    template< rewrite_rule R1, rewrite_rule R2 >
-   struct composition
+   struct concat 
    {
       R1 r1;
       R2 r2;
 
       uint64_t nruses;
 
-      composition( ) :
+      concat( ) :
          nruses(0)
       { } 
 

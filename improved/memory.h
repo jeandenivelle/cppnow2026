@@ -1,11 +1,29 @@
 
-#ifndef SHARED_MEMORY_
-#define SHARED_MEMORY_
+#ifndef TVM_MEMORY_
+#define TVM_MEMORY_
 
 #include <iterator>
 
-namespace shared
+namespace tvm
 {
+
+   // Written by Hans de Nivelle, December 2022.
+   // Made polymorphic in May 2026.
+
+   template< typename X, typename ... From >
+   void init( X& var, From&& ... args )
+      { new (&var) X( std::forward< From > ( args ) ... ); }
+
+   template< typename X, typename From >
+   void assign( X& var, From&& val )
+      { var = std::forward< From > ( val ); }
+
+   template< std::destructible X >
+   void destroy( X& var ) { (&var ) -> ~X( ); }
+
+
+
+   // Written by Hans de Nivelle, April 2026.
 
    template< std::input_iterator It >
    void destroy( It gone1, It gone2 )
@@ -15,7 +33,7 @@ namespace shared
       if constexpr( !std::is_trivially_destructible_v< tp > )
       {
          while( gone2 != gone1 )
-            ( -- gone2 ) -> tp::~tp( );
+            ( -- gone2 ) -> ~tp( );
       }
    }
 
@@ -41,10 +59,10 @@ namespace shared
       {
          while( t != into )
             ( --t ) -> ~tp( ); 
-
          throw;
       }
    }
+
 
    template< std::input_iterator In,  
              std::output_iterator< std::iter_value_t< In >> Out >
@@ -60,7 +78,9 @@ namespace shared
             new ( into ++ ) tp( std::move( * from1 ++ )); 
       }
       else
-         copy_construct_range( from1, from2, into );
+      {
+         copy_construct( from1, from2, into );
+      }
    } 
 }
 

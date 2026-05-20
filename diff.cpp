@@ -3,14 +3,9 @@
 #include "mathexpr.h"
 
 #include "skeletons.h"
-#include "raii.h"
-
-#include "scalar_vector.h"
-#include "scalar.h"
-#include "memory.h"
 
 #include "outermost.h"
-#include "composition.h"
+#include "concat.h"
 
 bool contains( selector sel, const auto& arN )
 {
@@ -299,18 +294,6 @@ mathexpr deriv( const mathexpr& expr, const std::string& var )
 }
 
 
-template< typename S, typename V >
-void print( const shared::scalar_vector<S,V> & vect )
-{
-   std::cout << "shared::vector ";
-   vect. printstate( );
-   std::cout << "\n";
-   std::cout << "scalar: " << vect. get( ) << "\n";
-   for( const auto& v : vect )
-      std::cout << "   " << v << "\n";
-   std::cout << "\n";
-}
-
 int main( int argc, char *argv[] )
 {
    bigint num = 10;
@@ -337,7 +320,7 @@ int main( int argc, char *argv[] )
    e = outermost( simpl, std::move(e) );
    std::cout << "after simplification: " << e << "\n";
 
-   efficient::composition< efficient::flattener, efficient::simplifier > red;
+   efficient::concat< efficient::flattener, efficient::simplifier > red;
 
 
    return 0; 
