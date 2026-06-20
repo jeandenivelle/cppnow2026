@@ -3,7 +3,7 @@
 
 std::ostream& operator << ( std::ostream& out, const mathexpr& expr )
 {
-   if constexpr ( true )
+   if constexpr ( false )
    {
       out << "{"; 
       expr. printstate( std::cout ); 

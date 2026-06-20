@@ -3,7 +3,7 @@
 diff( Expr, Var, 0 ) :- atom( Expr ), Expr \= Var. 
 diff( Var, Var, 1 ).
 
-diff( - Expr, Var, Deriv ) :- diff( Expr, Var, Deriv ).
+diff( - Expr, Var, - Deriv ) :- diff( Expr, Var, Deriv ).
 
 diff( Expr1 + Expr2, Var, Deriv1 + Deriv2 ) :-
    diff( Expr1, Var, Deriv1 ), diff( Expr2, Var, Deriv2 ).

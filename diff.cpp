@@ -233,7 +233,7 @@ mathexpr deriv( const mathexpr& expr, const std::string& var )
             auto prod = mathexpr_mul( {} ); 
             for( size_t i1 = 0; i1 != arN. size( ); ++ i1 )
             {
-               if( i != i1 )
+               if( i1 != i )
                   prod. view_arithN( ). push_back( arN. sub( i1 ));
                else
                   prod. view_arithN( ). push_back( 
@@ -267,6 +267,9 @@ mathexpr deriv( const mathexpr& expr, const std::string& var )
          if( spec2. sub1( ). sel( ) == sel_var &&
              spec2. sub2( ). sel( ) == sel_rat )
          {
+            if( spec2. sub1( ). view_variable( ). name( ) != var )
+               return mathexpr_rat(0);
+
             const auto& exp = spec2. sub2( ). view_ratconst( ). val( );
             if( exp == 0 )
                return mathexpr_rat( rational(0) );
@@ -300,16 +303,25 @@ int main( int argc, char *argv[] )
    bigint denom = 21;
 
    auto expr = mathexpr_mul( 
-               { mathexpr_sin( mathexpr_var( "xxx" )), 
-                 mathexpr_cos( mathexpr_var( "xxx" )), 
-                 mathexpr_pow( mathexpr_var( "xxx" ), mathexpr_rat(2)) } );
+               { mathexpr_sin( mathexpr_var( "xx" )), 
+                 mathexpr_cos( mathexpr_var( "xx" )), 
+                 mathexpr_pow( mathexpr_var( "xx" ), mathexpr_rat(2)) } );
+
+   expr = deriv( expr, "xx" );
+   std::cout << "derivative: " << expr << "\n\n";
+
+   {
+      efficient::simplifier simpl;
+      expr = normalize( simpl, std::move( expr ) );
+      std::cout << "after simplification: " << expr << "\n";
+   }
+ 
+   return 0;
 
    expr = mathexpr( sel_truediv, 
              mathexpr_sin( mathexpr_var( "x" )),
              mathexpr_cos( mathexpr_var( "x" )) );
 
-   expr = deriv( expr, "x" );
-   // std::cout << "derivative: " << expr << "\n\n";
 
    auto x = mathexpr_var( "x" ); 
    auto e = mathexpr_add( 
