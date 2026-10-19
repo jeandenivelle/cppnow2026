@@ -21,9 +21,18 @@ diff( Expr1 / Expr2, Var,
    diff( Expr2, Var, Deriv2 ).
 
 diff( pow(Var,0), Var, 0 ).
+   % diff( Var^0, Var ) -> 0.
 
-diff( pow(Var,N), Var, N * pow( Var, N1 )) :-
-   number(N), N \= 0, N1 is N - 1, !.
+diff( pow(Var1,R), Var2, 0 ) :-
+   atom( Var1 ), atom( Var2 ), Var1 \= Var2, number(R).
+      % diff( Var1^N, Var2 ) -> 0 (if Var1 is distinct from Var2.)
+ 
+diff( pow(Var,R), Var, R * pow( Var, R1 )) :-
+   number(R), R \= 0, R1 is R - 1, !.
+
+diff( pow( Expr, R ), Var, R * pow( Expr, R1 ) * Deriv ) :-
+   number(R), R \= 0, \+ atom( Expr ), R1 is R - 1, 
+   diff( Expr, Var, Deriv ).
 
 diff( sin( Expr ), Var, cos( Expr ) * Deriv ) :-
    diff( Expr, Var, Deriv ). 

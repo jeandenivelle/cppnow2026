@@ -264,18 +264,36 @@ mathexpr deriv( const mathexpr& expr, const std::string& var )
       {
          auto spec2 = expr. view_specfunc2( );
 
-         if( spec2. sub1( ). sel( ) == sel_var &&
-             spec2. sub2( ). sel( ) == sel_rat )
+         if( spec2. sub2( ). sel( ) == sel_rat )
          {
-            if( spec2. sub1( ). view_variable( ). name( ) != var )
-               return mathexpr_rat(0);
+            const rational& exp = spec2. sub2( ). view_ratconst( ). val( ); 
 
-            const auto& exp = spec2. sub2( ). view_ratconst( ). val( );
-            if( exp == 0 )
-               return mathexpr_rat( rational(0) );
-            return mathexpr_mul( { mathexpr_rat( exp ), 
-                      mathexpr_pow( spec2. sub1( ), 
-                         mathexpr_rat( exp - 1 )) } );
+            if( spec2. sub1( ). sel( ) == sel_var )
+            {
+               if( spec2. sub1( ). view_variable( ). name( ) != var )
+                  return mathexpr_rat(0);
+                     // diff( x^r, y ), with x != y.
+
+               if( exp == 0 )
+                  return mathexpr_rat( rational(0) );
+                     // diff x^0.
+
+               // We return r. x^{r-1}:
+
+               return mathexpr_mul( { 
+                  mathexpr_rat( exp ), 
+                  mathexpr_pow( spec2. sub1( ), mathexpr_rat( exp - 1 )) } );
+            }
+
+            // We are dealing with f(x)^r, where r is a rational
+            // constant, and f(x) a general function.
+            // The result is r. f(x)^{r-1}. diff( f(x), x ).
+
+            return mathexpr_mul( {
+               mathexpr_rat( exp ), 
+               mathexpr_pow( spec2. sub1( ), mathexpr_rat( exp - 1 )),
+               deriv( spec2. sub1( ), var ) 
+            });
          }
          break;
       }
